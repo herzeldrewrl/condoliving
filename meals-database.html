@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pantry Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2A22;
+    --paper:#F1ECDD;
+    --paper-2:#E8E1CC;
+    --line:#CFC5A6;
+    --mustard:#C1861F;
+    --herb:#43593A;
+    --herb-2:#5C7A4F;
+    --tomato:#AD4A32;
+    --white:#FBF9F2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:920px;margin:0 auto;padding:28px 20px 60px;}
+  h1,h2,h3{font-family:'Fraunces', serif;margin:0;}
+  .masthead{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:14px;margin-bottom:18px;
+  }
+  .masthead h1{font-size:30px;font-weight:700;letter-spacing:-0.01em;}
+  .masthead .sub{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--herb);margin-top:4px;}
+  .save-status{font-size:11px;color:#8A8168;font-family:'IBM Plex Mono',monospace;text-align:right;}
+
+  .tabs{display:flex;gap:2px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:9px 14px;background:var(--paper-2);border:1px solid var(--line);cursor:pointer;color:var(--ink);
+  }
+  .tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--white);border:1px solid var(--line);border-radius:2px;padding:18px;margin-bottom:14px;}
+  .meal-card{position:relative;}
+  .meal-card h3{font-size:18px;margin-bottom:6px;}
+  .meal-cat{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--mustard);}
+  .ing-list{margin:10px 0 0;padding:0;list-style:none;font-size:14px;line-height:1.75;}
+  .ing-list li::before{content:"— ";color:var(--herb-2);}
+  .ing-list li.shared{color:var(--herb);font-weight:600;}
+  .card-actions{position:absolute;top:16px;right:16px;display:flex;gap:8px;}
+  .icon-btn{
+    border:1px solid var(--line);background:var(--paper);font-family:'IBM Plex Mono',monospace;
+    font-size:11px;padding:4px 9px;cursor:pointer;color:var(--ink);border-radius:2px;
+  }
+  .icon-btn:hover{background:var(--ink);color:var(--paper);}
+  .icon-btn.danger:hover{background:var(--tomato);border-color:var(--tomato);}
+
+  .section-label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--herb);margin:26px 0 10px;border-top:1px dashed var(--line);padding-top:16px;}
+  .section-label:first-child{border-top:none;margin-top:0;padding-top:0;}
+
+  button.primary{
+    font-family:'IBM Plex Mono',monospace;background:var(--herb);color:var(--white);border:none;
+    padding:10px 16px;border-radius:2px;cursor:pointer;font-size:13px;letter-spacing:.03em;
+  }
+  button.primary:hover{background:var(--ink);}
+  button.ghost{
+    font-family:'IBM Plex Mono',monospace;background:transparent;color:var(--ink);border:1px solid var(--ink);
+    padding:9px 15px;border-radius:2px;cursor:pointer;font-size:13px;
+  }
+  button.ghost:hover{background:var(--ink);color:var(--paper);}
+
+  .suggest-box{background:#EFE6CE;border:1px dashed var(--mustard);padding:14px 16px;border-radius:2px;margin-bottom:20px;}
+  .suggest-box .head{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#8A5F14;margin-bottom:8px;}
+  .suggest-item{font-size:13.5px;margin-bottom:4px;}
+  .suggest-item b{color:var(--herb);}
+
+  /* Receipt / grocery list */
+  .receipt{background:var(--white);border:1px solid var(--line);padding:20px 24px;font-family:'IBM Plex Mono',monospace;}
+  .receipt-head{text-align:center;border-bottom:1px dashed var(--ink);padding-bottom:12px;margin-bottom:12px;}
+  .receipt-head h2{font-size:18px;}
+  .receipt-head .meta{font-size:11px;color:#8A8168;margin-top:4px;}
+  .aisle-block{margin-bottom:16px;}
+  .aisle-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mustard);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px;}
+  .grocery-row{display:flex;align-items:center;gap:10px;font-size:14px;padding:3px 0;}
+  .grocery-row input{width:15px;height:15px;accent-color:var(--herb);}
+  .grocery-row.checked label{text-decoration:line-through;color:#A79E85;}
+  .grocery-row label{flex:1;cursor:pointer;}
+  .item-sub{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A8168;font-weight:400;text-decoration:none !important;margin-top:1px;}
+  .empty-note{font-size:13px;color:#8A8168;font-style:italic;}
+
+  /* Ingredient manager table */
+  table.ing-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.ing-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--herb);border-bottom:2px solid var(--ink);padding:6px 8px;}
+  table.ing-table td{padding:6px 8px;border-bottom:1px solid var(--line);}
+  table.ing-table select, table.ing-table input[type=text]{
+    font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:2px;background:var(--paper);width:100%;
+  }
+  .used-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A8168;}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(43,42,34,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--white);border-radius:3px;padding:26px;max-width:460px;width:100%;max-height:88vh;overflow-y:auto;}
+  .modal h3{margin-bottom:14px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--herb);margin-bottom:5px;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;background:var(--paper);
+  }
+  .field textarea{min-height:100px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+  .hint{font-size:11px;color:#8A8168;margin-top:5px;}
+
+  .weekly-meal-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .weekly-meal-row input{width:16px;height:16px;accent-color:var(--herb);}
+  .weekly-meal-row .name{font-weight:600;flex:1;}
+  .weekly-meal-row .cat{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--mustard);text-transform:uppercase;}
+
+  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+
+  .calc-add-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .calc-add-row input{padding:9px 10px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;background:var(--paper);}
+  .calc-name-input{flex:2;min-width:120px;}
+  .calc-qty-input{width:64px;}
+  .calc-price-input{width:100px;}
+  .calc-row{display:flex;align-items:center;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--line);}
+  .calc-row .cname{flex:1;}
+  .calc-row .cqty{font-family:'IBM Plex Mono',monospace;color:#8A8168;width:40px;}
+  .calc-row .cprice{font-family:'IBM Plex Mono',monospace;width:80px;text-align:right;}
+  .calc-row .cremove{background:none;border:none;color:var(--tomato);cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;}
+  .calc-total-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;border-top:2px solid var(--ink);margin-top:10px;padding-top:10px;}
+  .calc-budget-note{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:8px;text-align:right;}
+  .calc-budget-note.over{color:var(--tomato);font-weight:600;}
+  .calc-budget-note.under{color:var(--herb);}
+  .calc-list-row{display:flex;align-items:center;gap:8px;font-size:14px;padding:6px 0;flex-wrap:wrap;}
+  .calc-list-row.added label{text-decoration:line-through;color:#A79E85;}
+  .calc-list-row label{flex:1;cursor:pointer;}
+  .calc-list-row input[type=number]{width:78px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--paper);}
+  .qtymini{width:44px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--paper);}
+  .notemini{flex:1;min-width:100px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;background:var(--paper);}
+  .unitmini{width:76px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--paper);}
+  .calc-list-row button{
+    font-family:'IBM Plex Mono',monospace;background:var(--herb);color:var(--white);border:none;
+    padding:6px 10px;border-radius:2px;cursor:pointer;font-size:12px;
+  }
+  .calc-list-row button:hover{background:var(--ink);}
+  .calc-list-row button:disabled{background:var(--line);cursor:default;}
+  .trip-card{background:var(--white);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin-bottom:10px;}
+  .trip-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .trip-date{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--herb);text-transform:uppercase;letter-spacing:.05em;}
+  .trip-notes{font-size:13px;color:#6B6248;margin-top:4px;font-style:italic;}
+  .trip-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  .trip-total{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
+  .trip-items{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#6B6248;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <div>
+      <h1>Pantry Ledger</h1>
+      <div class="sub">Meals database &amp; grocery planner</div>
+    </div>
+    <div class="save-status" id="saveStatus">loading…</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="meals">Meals</div>
+    <div class="tab" data-tab="grocery">Grocery List</div>
+    <div class="tab" data-tab="weekly">Weekly Plan</div>
+    <div class="tab" data-tab="pantry">Pantry Restock</div>
+    <div class="tab" data-tab="ingredients">Ingredients</div>
+    <div class="tab" data-tab="calculator">Calculator</div>
+  </div>
+
+  <!-- MEALS -->
+  <div class="panel active" id="panel-meals">
+    <div class="top-row">
+      <div></div>
+      <button class="primary" id="addMealBtn">+ Add Meal</button>
+    </div>
+    <div id="suggestBox"></div>
+    <div id="mealsContainer"></div>
+  </div>
+
+  <!-- GROCERY LIST -->
+  <div class="panel" id="panel-grocery">
+    <div class="top-row">
+      <div class="hint">Auto-built from every meal in your database, deduplicated and grouped by aisle.</div>
+      <button class="ghost" id="clearCheckedBtn">Clear checked</button>
+    </div>
+    <div class="receipt">
+      <div class="receipt-head">
+        <h2>Master Grocery List</h2>
+        <div class="meta" id="groceryMeta"></div>
+      </div>
+      <div id="groceryContainer"></div>
+    </div>
+  </div>
+
+  <!-- WEEKLY PLAN -->
+  <div class="panel" id="panel-weekly">
+    <div class="section-label">Pick what you're cooking this week</div>
+    <div class="card" id="weeklyMealPicker"></div>
+    <div class="section-label">This week's shopping list (perishables for selected meals)</div>
+    <div class="receipt">
+      <div id="weeklyContainer"></div>
+    </div>
+  </div>
+
+  <!-- PANTRY RESTOCK -->
+  <div class="panel" id="panel-pantry">
+    <div class="hint" style="margin-bottom:14px;">Shelf-stable items across your whole database. Check off what needs restocking on your next monthly run.</div>
+    <div class="receipt">
+      <div class="receipt-head"><h2>Monthly Pantry Restock</h2></div>
+      <div id="pantryContainer"></div>
+    </div>
+  </div>
+
+  <!-- INGREDIENTS -->
+  <div class="panel" id="panel-ingredients">
+    <div class="hint" style="margin-bottom:14px;">Every ingredient in your meals, with its aisle and shelf-life type. Edit either to reorganize the grocery list and weekly/monthly split.</div>
+    <table class="ing-table">
+      <thead><tr><th>Ingredient</th><th>Aisle</th><th>Type</th><th>Unit</th><th>Notes</th><th>Used in</th><th></th></tr></thead>
+      <tbody id="ingredientsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="panel" id="panel-calculator">
+    <div class="card">
+      <div class="field" style="margin-bottom:12px;">
+        <label>Budget for this trip (optional)</label>
+        <input type="number" id="calcBudget" inputmode="decimal" step="0.01" placeholder="e.g. 50.00">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Notes (optional)</label>
+        <textarea id="calcNotes" rows="2" placeholder="e.g. Buy 2x eggs for the week, check for sales on olive oil"></textarea>
+      </div>
+    </div>
+
+    <div class="section-label">Your list — tap a price, hit Add</div>
+    <div class="receipt">
+      <div id="calcListContainer"></div>
+    </div>
+
+    <div class="section-label">Add something not on the list</div>
+    <div class="card">
+      <div class="calc-add-row">
+        <input type="text" id="calcItemName" placeholder="Item" class="calc-name-input">
+        <input type="text" id="calcItemUnit" placeholder="Unit" class="unitmini">
+        <input type="text" id="calcItemNote" placeholder="Note (brand, etc.)" class="notemini">
+        <input type="number" id="calcItemQty" inputmode="numeric" min="1" value="1" class="calc-qty-input" title="Qty">
+        <input type="number" id="calcItemPrice" inputmode="decimal" step="0.01" placeholder="Price" class="calc-price-input">
+        <button class="primary" id="calcAddBtn">Add</button>
+      </div>
+      <div class="hint" style="margin-top:12px;">Or paste a whole list at once — one item per line, price optional (e.g. "Paper towels - 85" or just "Paper towels").</div>
+      <textarea id="calcPasteBox" rows="4" placeholder="Paper towels - 85&#10;Dish soap&#10;Trash bags, 120" style="width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--paper);resize:vertical;"></textarea>
+      <div style="margin-top:8px;">
+        <button class="ghost" id="calcParseBtn">Organize into list</button>
+      </div>
+      <div id="calcPasteContainer" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="section-label">Running Total</div>
+    <div class="receipt">
+      <div class="receipt-head">
+        <h2>Cart</h2>
+        <div class="meta" id="calcCount"></div>
+      </div>
+      <div id="calcItemsContainer"></div>
+      <div class="calc-total-row">
+        <span>Total</span>
+        <span id="calcTotal">0.00</span>
+      </div>
+      <div id="calcBudgetNote" class="calc-budget-note"></div>
+    </div>
+    <div class="top-row" style="margin-top:14px;">
+      <button class="ghost" id="calcClearBtn">Clear trip</button>
+      <button class="primary" id="calcSaveTripBtn">Save Trip to History</button>
+    </div>
+
+    <div class="section-label">Past trips</div>
+    <div id="tripHistoryContainer"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add Meal</h3>
+    <div class="field">
+      <label>Meal name</label>
+      <input type="text" id="mealName" placeholder="e.g. Shakshuka">
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <input type="text" id="mealCategory" placeholder="e.g. Breakfast" list="categoryOptions">
+      <datalist id="categoryOptions"></datalist>
+    </div>
+    <div class="field">
+      <label>Ingredients</label>
+      <textarea id="mealIngredients" placeholder="One per line, e.g.&#10;Eggs&#10;Tomatoes&#10;Onion"></textarea>
+      <div class="hint">One ingredient per line (or comma-separated). New ingredients get added to the registry automatically — you can fix their aisle/type in the Ingredients tab.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="cancelBtn">Cancel</button>
+      <button class="primary" id="saveMealBtn">Save Meal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const AISLES = ['Fruits & Vegetables','Bakery','Dairy & Eggs','Meat & Seafood','Pantry & Condiments','Frozen','Drinks','Snacks','Other'];
+
+const SYNONYMS = {
+  'cheese slice':'cheese','cheese slices':'cheese',
+  'small tomato':'tomatoes','tomato':'tomatoes',
+  'avocados':'avocado',
+  'bananas':'banana',
+  'apples':'apple',
+  'oranges':'orange',
+  'lemons':'lemon','lemon or calamansi juice':'lemon','lemon water':'lemon','calamansi':'lemon',
+  'egg':'eggs',
+  'potato':'potatoes',
+  'onions':'onion',
+  'olive oil or butter':'olive oil',
+  'cheese slices ':'cheese'
+};
+
+const DEFAULTS = {
+  'whole wheat bread': {aisle:'Bakery', type:'perishable', unit:'1 loaf'},
+  'granola': {aisle:'Bakery', type:'pantry', unit:'1 bag'},
+  'eggs': {aisle:'Dairy & Eggs', type:'perishable', unit:'1 dozen'},
+  'greek yogurt': {aisle:'Dairy & Eggs', type:'perishable', unit:'1 tub'},
+  'cheese': {aisle:'Dairy & Eggs', type:'perishable', unit:'1 pack'},
+  'milk': {aisle:'Dairy & Eggs', type:'perishable', unit:'1 L'},
+  'butter': {aisle:'Dairy & Eggs', type:'perishable', unit:'1 block'},
+  'potatoes': {aisle:'Fruits & Vegetables', type:'pantry', unit:'1 kg'},
+  'onion': {aisle:'Fruits & Vegetables', type:'pantry', unit:'1 kg'},
+  'garlic': {aisle:'Fruits & Vegetables', type:'pantry', unit:'1 bulb'},
+  'spring onions': {aisle:'Fruits & Vegetables', type:'perishable', unit:'1 bunch'},
+  'parsley': {aisle:'Fruits & Vegetables', type:'perishable', unit:'1 bunch'},
+  'lettuce': {aisle:'Fruits & Vegetables', type:'perishable', unit:'1 head'},
+  'tomatoes': {aisle:'Fruits & Vegetables', type:'perishable', unit:'500 g'},
+  'avocado': {aisle:'Fruits & Vegetables', type:'perishable', unit:'2 pcs'},
+  'banana': {aisle:'Fruits & Vegetables', type:'perishable', unit:'1 bunch'},
+  'apple': {aisle:'Fruits & Vegetables', type:'perishable', unit:'4 pcs'},
+  'orange': {aisle:'Fruits & Vegetables', type:'perishable', unit:'4 pcs'},
+  'papaya': {aisle:'Fruits & Vegetables', type:'perishable', unit:'1 pc'},
+  'lemon': {aisle:'Fruits & Vegetables', type:'perishable', unit:'3 pcs'},
+  'olive oil': {aisle:'Pantry & Condiments', type:'pantry', unit:'500 ml'},
+  'mayonnaise': {aisle:'Pantry & Condiments', type:'pantry', unit:'1 jar'},
+  'ketchup': {aisle:'Pantry & Condiments', type:'pantry', unit:'1 bottle'},
+  'salt': {aisle:'Pantry & Condiments', type:'pantry', unit:'1 box'},
+  'black pepper': {aisle:'Pantry & Condiments', type:'pantry', unit:'1 jar'},
+  'honey': {aisle:'Pantry & Condiments', type:'pantry', unit:'1 jar'},
+  'water': {aisle:'Drinks', type:'pantry', unit:'6-pack'},
+  'coconut water': {aisle:'Drinks', type:'pantry', unit:'1 L'},
+  'orange juice': {aisle:'Drinks', type:'perishable', unit:'1 L'},
+  'sprite zero': {aisle:'Drinks', type:'pantry', unit:'1.5 L'},
+  'dark chocolate': {aisle:'Snacks', type:'pantry', unit:'1 bar'},
+};
+
+const DEFAULT_MEALS = [
+  {id:1, category:'Breakfast', name:'Egg Sandwich', ingredients:['Whole wheat bread','Egg','Mayonnaise','Spring onions','Olive oil','Cheese']},
+  {id:2, category:'Breakfast', name:'Avocado Toast', ingredients:['Whole wheat bread','Avocado','Lemon or calamansi juice','Salt','Black pepper','Olive oil or butter (optional)']},
+  {id:3, category:'Breakfast', name:'Breakfast Sandwich', ingredients:['Whole wheat bread','Egg','Small tomato','Cheese slice','Avocado','Lettuce','Olive oil']},
+  {id:4, category:'Breakfast', name:'Breakfast Potatoes', ingredients:['Potatoes','Egg','Parsley','Olive oil','Onion','Garlic','Butter','Salt','Black pepper','Ketchup']},
+  {id:5, category:'Breakfast', name:'Yogurt Bowl', ingredients:['Greek yogurt','Granola','Banana','Honey (optional)']},
+  {id:6, category:'Fresh Fruits', name:'Fresh Fruits', ingredients:['Banana','Apple','Orange','Papaya','Lemon']},
+  {id:7, category:'Drinks', name:'Drinks', ingredients:['Water','Milk','Coconut water','Orange juice','Lemon water']},
+  {id:8, category:'Beverages', name:'Beverages', ingredients:['Sprite Zero']},
+  {id:9, category:'Sweets', name:'Sweets', ingredients:['Dark chocolate']},
+];
+
+let db = { meals: [], ingredients: {} };
+let planning = { weeklySelection: [], pantryRestock: {}, groceryChecked: {} };
+let calc = { current: { budget: null, notes: '', items: [] }, history: [] };
+let editingMealId = null;
+let nextId = 1;
+let nextCalcId = 1;
+let nextTripId = 1;
+
+/* ---------- STORAGE (falls back to localStorage outside claude.ai) ---------- */
+const hasClaudeStorage = (typeof window !== 'undefined' && !!window.storage && typeof window.storage.get === 'function');
+async function storageGet(key){
+  if (hasClaudeStorage){
+    try{ return await window.storage.get(key, false); }
+    catch(e){ /* fall through to localStorage */ }
+  }
+  try{
+    const raw = localStorage.getItem('pantry-ledger:'+key);
+    return raw != null ? { value: raw } : null;
+  } catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if (hasClaudeStorage){
+    try{ return await window.storage.set(key, value, false); }
+    catch(e){ /* fall through to localStorage */ }
+  }
+  try{
+    localStorage.setItem('pantry-ledger:'+key, value);
+    return { key, value };
+  } catch(e){ return null; }
+}
+
+function titleCase(s){
+  return s.split(' ').map(w => w.length ? w[0].toUpperCase()+w.slice(1) : w).join(' ');
+}
+function normalize(raw){
+  let s = raw.toLowerCase().trim().replace(/\s*\(optional\)\s*/g,'').trim();
+  if (SYNONYMS[s]) return SYNONYMS[s];
+  return s;
+}
+function ensureIngredient(rawName){
+  const key = normalize(rawName);
+  if (!db.ingredients[key]){
+    const d = DEFAULTS[key] || {aisle:'Other', type:'pantry'};
+    db.ingredients[key] = { display: titleCase(key), aisle: d.aisle, type: d.type, unit: d.unit || '', notes: '' };
+  } else {
+    if (db.ingredients[key].unit === undefined) db.ingredients[key].unit = '';
+    if (db.ingredients[key].notes === undefined) db.ingredients[key].notes = '';
+  }
+  return key;
+}
+function rebuildIngredientRegistry(){
+  // ensure every ingredient referenced by meals exists in registry
+  db.meals.forEach(m => m.ingredients.forEach(i => ensureIngredient(i)));
+}
+
+async function loadAll(){
+  try{
+    const r = await storageGet('mealsdb-v1');
+    if (r && r.value) db = JSON.parse(r.value);
+    else throw new Error('none');
+  } catch(e){
+    db = { meals: JSON.parse(JSON.stringify(DEFAULT_MEALS)), ingredients: {} };
+    rebuildIngredientRegistry();
+    await saveDB();
+  }
+  nextId = Math.max(1, ...db.meals.map(m=>m.id)) + 1;
+  Object.keys(db.ingredients).forEach(key=>{
+    const info = db.ingredients[key];
+    if (info.unit === undefined || info.unit === '') {
+      info.unit = (DEFAULTS[key] && DEFAULTS[key].unit) || info.unit || '';
+    }
+    if (info.notes === undefined) info.notes = '';
+  });
+  saveDB();
+
+  try{
+    const r2 = await storageGet('planning-v1');
+    if (r2 && r2.value) planning = JSON.parse(r2.value);
+    else throw new Error('none');
+  } catch(e){
+    planning = { weeklySelection: [], pantryRestock: {}, groceryChecked: {} };
+    await savePlanning();
+  }
+
+  try{
+    const r3 = await storageGet('calc-v1');
+    if (r3 && r3.value) {
+      const parsed = JSON.parse(r3.value);
+      if (parsed.current) {
+        calc = parsed;
+      } else {
+        // migrate legacy shape { budget, items }
+        calc = { current: { budget: parsed.budget ?? null, notes: '', items: parsed.items || [] }, history: [] };
+      }
+    } else throw new Error('none');
+  } catch(e){
+    calc = { current: { budget: null, notes: '', items: [] }, history: [] };
+    await saveCalc();
+  }
+  const allIds = [...calc.current.items, ...calc.history.flatMap(t=>t.items)].map(i=>i.id);
+  nextCalcId = allIds.length ? Math.max(...allIds) + 1 : 1;
+  nextTripId = calc.history.length ? Math.max(...calc.history.map(t=>t.id)) + 1 : 1;
+
+  renderAll();
+}
+
+async function saveDB(){
+  setStatus('saving…');
+  try{
+    await storageSet('mealsdb-v1', JSON.stringify(db));
+    setStatus('saved');
+  } catch(e){ setStatus('save failed'); }
+}
+async function savePlanning(){
+  try{
+    await storageSet('planning-v1', JSON.stringify(planning));
+  } catch(e){ /* silent */ }
+}
+async function saveCalc(){
+  try{
+    await storageSet('calc-v1', JSON.stringify(calc));
+  } catch(e){ /* silent */ }
+}
+function setStatus(t){
+  document.getElementById('saveStatus').textContent = t;
+}
+
+function ingredientMealCounts(){
+  const counts = {};
+  db.meals.forEach(m=>{
+    const seen = new Set();
+    m.ingredients.forEach(raw=>{
+      const key = normalize(raw);
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (!counts[key]) counts[key] = [];
+      counts[key].push(m.name);
+    });
+  });
+  return counts;
+}
+
+function renderAll(){
+  renderMeals();
+  renderSuggestions();
+  renderGrocery();
+  renderWeekly();
+  renderPantry();
+  renderIngredients();
+  renderCalc();
+}
+
+/* ---------- MEALS TAB ---------- */
+function renderMeals(){
+  const counts = ingredientMealCounts();
+  const container = document.getElementById('mealsContainer');
+  container.innerHTML = '';
+  const byCat = {};
+  db.meals.forEach(m => { (byCat[m.category] = byCat[m.category] || []).push(m); });
+  Object.keys(byCat).forEach(cat=>{
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = cat;
+    container.appendChild(label);
+    byCat[cat].forEach(m=>{
+      const card = document.createElement('div');
+      card.className = 'card meal-card';
+      const ul = m.ingredients.map(raw=>{
+        const key = normalize(raw);
+        const shared = counts[key] && counts[key].length > 1;
+        return `<li class="${shared?'shared':''}">${raw}</li>`;
+      }).join('');
+      card.innerHTML = `
+        <div class="card-actions">
+          <button class="icon-btn" onclick="openEdit(${m.id})">Edit</button>
+          <button class="icon-btn danger" onclick="deleteMeal(${m.id})">Delete</button>
+        </div>
+        <div class="meal-cat">${m.category}</div>
+        <h3>${m.name}</h3>
+        <ul class="ing-list">${ul}</ul>
+      `;
+      container.appendChild(card);
+    });
+  });
+}
+
+function renderSuggestions(){
+  const counts = ingredientMealCounts();
+  const shared = Object.entries(counts).filter(([k,v])=>v.length>1)
+    .sort((a,b)=>b[1].length-a[1].length).slice(0,8);
+  const box = document.getElementById('suggestBox');
+  if (!shared.length){ box.innerHTML=''; return; }
+  box.innerHTML = `<div class="suggest-box">
+    <div class="head">Shared ingredients — buy once, use everywhere</div>
+    ${shared.map(([k,v])=>{
+      const disp = db.ingredients[k] ? db.ingredients[k].display : titleCase(k);
+      return `<div class="suggest-item"><b>${disp}</b> — used in ${v.length} meals (${v.join(', ')})</div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ---------- MODAL ---------- */
+document.getElementById('addMealBtn').onclick = ()=> openAdd();
+document.getElementById('cancelBtn').onclick = closeModal;
+function openAdd(){
+  editingMealId = null;
+  document.getElementById('modalTitle').textContent = 'Add Meal';
+  document.getElementById('mealName').value='';
+  document.getElementById('mealCategory').value='';
+  document.getElementById('mealIngredients').value='';
+  populateCategoryOptions();
+  document.getElementById('overlay').classList.add('open');
+}
+window.openEdit = function(id){
+  const m = db.meals.find(x=>x.id===id);
+  if (!m) return;
+  editingMealId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Meal';
+  document.getElementById('mealName').value = m.name;
+  document.getElementById('mealCategory').value = m.category;
+  document.getElementById('mealIngredients').value = m.ingredients.join('\n');
+  populateCategoryOptions();
+  document.getElementById('overlay').classList.add('open');
+}
+window.deleteMeal = function(id){
+  if (!confirm('Delete this meal? This will not remove its ingredients from the registry.')) return;
+  db.meals = db.meals.filter(m=>m.id!==id);
+  saveDB(); renderAll();
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+function populateCategoryOptions(){
+  const dl = document.getElementById('categoryOptions');
+  const cats = [...new Set(db.meals.map(m=>m.category))];
+  dl.innerHTML = cats.map(c=>`<option value="${c}">`).join('');
+}
+document.getElementById('saveMealBtn').onclick = ()=>{
+  const name = document.getElementById('mealName').value.trim();
+  const category = document.getElementById('mealCategory').value.trim() || 'Other';
+  const rawIngredients = document.getElementById('mealIngredients').value
+    .split(/[\n,]/).map(s=>s.trim()).filter(Boolean);
+  if (!name || !rawIngredients.length){ alert('Please add a meal name and at least one ingredient.'); return; }
+  rawIngredients.forEach(ensureIngredient);
+  if (editingMealId){
+    const m = db.meals.find(x=>x.id===editingMealId);
+    m.name = name; m.category = category; m.ingredients = rawIngredients;
+  } else {
+    db.meals.push({ id: nextId++, name, category, ingredients: rawIngredients });
+  }
+  saveDB();
+  closeModal();
+  renderAll();
+};
+
+/* ---------- GROCERY LIST ---------- */
+function aggregateIngredients(mealFilter){
+  const meals = mealFilter ? db.meals.filter(m=>mealFilter.includes(m.id)) : db.meals;
+  const set = new Set();
+  meals.forEach(m=>m.ingredients.forEach(raw=>set.add(normalize(raw))));
+  return [...set];
+}
+function groupByAisle(keys, typeFilter){
+  const groups = {};
+  keys.forEach(k=>{
+    const info = db.ingredients[k] || {display:titleCase(k), aisle:'Other', type:'pantry', unit:'', notes:''};
+    if (typeFilter && info.type !== typeFilter) return;
+    (groups[info.aisle] = groups[info.aisle] || []).push({key:k, display:info.display, unit:info.unit||'', notes:info.notes||''});
+  });
+  Object.values(groups).forEach(list=>list.sort((a,b)=>a.display.localeCompare(b.display)));
+  return groups;
+}
+function itemSubtext(item){
+  const parts = [];
+  if (item.unit) parts.push(item.unit);
+  if (item.notes) parts.push(item.notes);
+  return parts.length ? `<span class="item-sub">${parts.join(' · ')}</span>` : '';
+}
+function renderGroceryGroups(container, groups, checkPrefix){
+  container.innerHTML = '';
+  const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
+  if (!aisleOrder.length){
+    container.innerHTML = '<div class="empty-note">Nothing here yet.</div>';
+    return;
+  }
+  aisleOrder.forEach(aisle=>{
+    const block = document.createElement('div');
+    block.className = 'aisle-block';
+    const rows = groups[aisle].map(item=>{
+      const ckKey = checkPrefix + item.key;
+      const checked = !!planning.groceryChecked[ckKey];
+      return `<div class="grocery-row ${checked?'checked':''}">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggleCheck('${ckKey}')">
+        <label onclick="toggleCheckFromLabel('${ckKey}')">${item.display}${itemSubtext(item)}</label>
+      </div>`;
+    }).join('');
+    block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
+    container.appendChild(block);
+  });
+}
+window.toggleCheck = function(key){
+  planning.groceryChecked[key] = !planning.groceryChecked[key];
+  savePlanning(); renderGrocery(); renderWeekly();
+}
+window.toggleCheckFromLabel = function(key){ toggleCheck(key); }
+
+function renderGrocery(){
+  const keys = aggregateIngredients(null);
+  const groups = groupByAisle(keys, null);
+  renderGroceryGroups(document.getElementById('groceryContainer'), groups, 'g:');
+  document.getElementById('groceryMeta').textContent = `${keys.length} unique ingredients across ${db.meals.length} meals`;
+}
+document.getElementById('clearCheckedBtn').onclick = ()=>{
+  Object.keys(planning.groceryChecked).forEach(k=>{ if(k.startsWith('g:')) delete planning.groceryChecked[k]; });
+  savePlanning(); renderGrocery();
+};
+
+/* ---------- WEEKLY PLAN ---------- */
+function renderWeekly(){
+  const picker = document.getElementById('weeklyMealPicker');
+  picker.innerHTML = db.meals.map(m=>{
+    const checked = planning.weeklySelection.includes(m.id);
+    return `<div class="weekly-meal-row">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleWeekly(${m.id})">
+      <div class="name">${m.name}</div>
+      <div class="cat">${m.category}</div>
+    </div>`;
+  }).join('');
+
+  const keys = aggregateIngredients(planning.weeklySelection.length ? planning.weeklySelection : []);
+  const groups = groupByAisle(keys, 'perishable');
+  const wrap = document.getElementById('weeklyContainer');
+  if (!planning.weeklySelection.length){
+    wrap.innerHTML = '<div class="empty-note">Select meals above to build this week&#39;s shopping list.</div>';
+    return;
+  }
+  renderGroceryGroups(wrap, groups, 'w:');
+}
+window.toggleWeekly = function(id){
+  const i = planning.weeklySelection.indexOf(id);
+  if (i>-1) planning.weeklySelection.splice(i,1); else planning.weeklySelection.push(id);
+  savePlanning(); renderWeekly();
+}
+
+/* ---------- PANTRY RESTOCK ---------- */
+function renderPantry(){
+  const keys = aggregateIngredients(null);
+  const groups = groupByAisle(keys, 'pantry');
+  const container = document.getElementById('pantryContainer');
+  container.innerHTML = '';
+  const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
+  if (!aisleOrder.length){ container.innerHTML = '<div class="empty-note">No pantry-type ingredients yet.</div>'; return; }
+  aisleOrder.forEach(aisle=>{
+    const block = document.createElement('div');
+    block.className = 'aisle-block';
+    const rows = groups[aisle].map(item=>{
+      const checked = !!planning.pantryRestock[item.key];
+      return `<div class="grocery-row ${checked?'checked':''}">
+        <input type="checkbox" ${checked?'checked':''} onchange="togglePantry('${item.key}')">
+        <label onclick="togglePantry('${item.key}')">${item.display}${itemSubtext(item)}</label>
+      </div>`;
+    }).join('');
+    block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
+    container.appendChild(block);
+  });
+}
+window.togglePantry = function(key){
+  planning.pantryRestock[key] = !planning.pantryRestock[key];
+  savePlanning(); renderPantry();
+}
+
+/* ---------- INGREDIENT MANAGER ---------- */
+function renderIngredients(){
+  const counts = ingredientMealCounts();
+  const body = document.getElementById('ingredientsBody');
+  const keys = Object.keys(db.ingredients).sort((a,b)=>db.ingredients[a].display.localeCompare(db.ingredients[b].display));
+  body.innerHTML = keys.map(key=>{
+    const info = db.ingredients[key];
+    const usedIn = (counts[key]||[]).length;
+    const aisleOpts = AISLES.map(a=>`<option value="${a}" ${a===info.aisle?'selected':''}>${a}</option>`).join('');
+    return `<tr>
+      <td><input type="text" value="${info.display}" onchange="renameIngredient('${key}', this.value)"></td>
+      <td><select onchange="setIngredientField('${key}','aisle',this.value)">${aisleOpts}</select></td>
+      <td><select onchange="setIngredientField('${key}','type',this.value)">
+        <option value="perishable" ${info.type==='perishable'?'selected':''}>Perishable (weekly)</option>
+        <option value="pantry" ${info.type==='pantry'?'selected':''}>Pantry (monthly)</option>
+      </select></td>
+      <td><input type="text" value="${info.unit||''}" placeholder="e.g. 12 pcs, 500ml" onchange="setIngredientField('${key}','unit',this.value)"></td>
+      <td><input type="text" value="${info.notes||''}" placeholder="e.g. brand, preference" onchange="setIngredientField('${key}','notes',this.value)"></td>
+      <td class="used-count">${usedIn} meal${usedIn===1?'':'s'}</td>
+      <td>${usedIn===0 ? `<button class="icon-btn danger" onclick="deleteIngredient('${key}')">Remove</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+window.setIngredientField = function(key, field, value){
+  db.ingredients[key][field] = value;
+  saveDB(); renderAll();
+}
+window.renameIngredient = function(key, value){
+  db.ingredients[key].display = value.trim() || db.ingredients[key].display;
+  saveDB(); renderAll();
+}
+window.deleteIngredient = function(key){
+  delete db.ingredients[key];
+  saveDB(); renderAll();
+}
+
+/* ---------- CALCULATOR ---------- */
+function renderCalcList(){
+  const keys = aggregateIngredients(null);
+  const groups = groupByAisle(keys, null);
+  const container = document.getElementById('calcListContainer');
+  container.innerHTML = '';
+  const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
+  if (!aisleOrder.length){
+    container.innerHTML = '<div class="empty-note">Your grocery list is empty — add some meals first.</div>';
+    return;
+  }
+  const addedKeys = new Set(calc.current.items.filter(i=>i.key).map(i=>i.key));
+  aisleOrder.forEach(aisle=>{
+    const block = document.createElement('div');
+    block.className = 'aisle-block';
+    const rows = groups[aisle].map(item=>{
+      const added = addedKeys.has(item.key);
+      const unitVal = (item.unit||'').replace(/"/g,'&quot;');
+      const notesVal = (item.notes||'').replace(/"/g,'&quot;');
+      return `<div class="calc-list-row ${added?'added':''}">
+        <label>${item.display}</label>
+        <input type="text" class="unitmini" placeholder="Unit" value="${unitVal}" onchange="updateIngredientUnit('${item.key}', this.value)" ${added?'disabled':''}>
+        <input type="text" class="notemini" placeholder="Note (brand, etc.)" value="${notesVal}" onchange="updateIngredientNotes('${item.key}', this.value)" ${added?'disabled':''}>
+        <input type="number" class="qtymini" min="1" value="1" id="qty-${item.key}" ${added?'disabled':''}>
+        <input type="number" step="0.01" placeholder="Price" id="price-${item.key}" ${added?'disabled':''}>
+        <button onclick="quickAddCalc('${item.key}','${item.display.replace(/'/g,"\\'")}')" ${added?'disabled':''}>${added?'Added':'Add'}</button>
+      </div>`;
+    }).join('');
+    block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
+    container.appendChild(block);
+  });
+}
+window.updateIngredientUnit = function(key, value){
+  if (!db.ingredients[key]) return;
+  db.ingredients[key].unit = value;
+  saveDB();
+  renderCalcList();
+  renderMeals(); renderGrocery(); renderWeekly(); renderPantry(); renderIngredients();
+};
+window.updateIngredientNotes = function(key, value){
+  if (!db.ingredients[key]) return;
+  db.ingredients[key].notes = value;
+  saveDB();
+  renderCalcList();
+  renderMeals(); renderGrocery(); renderWeekly(); renderPantry(); renderIngredients();
+};
+window.quickAddCalc = function(key, display){
+  const qtyEl = document.getElementById('qty-'+key);
+  const priceEl = document.getElementById('price-'+key);
+  const qty = parseFloat(qtyEl.value) || 1;
+  const price = parseFloat(priceEl.value);
+  if (isNaN(price)){ alert('Enter a price for '+display+' first.'); return; }
+  const info = db.ingredients[key] || {};
+  calc.current.items.push({ id: nextCalcId++, key, name: display, unit: info.unit||'', notes: info.notes||'', qty, price });
+  saveCalc(); renderCalc();
+};
+function renderCalc(){
+  renderCalcList();
+  renderPasteDraft();
+  const budgetInput = document.getElementById('calcBudget');
+  if (document.activeElement !== budgetInput){
+    budgetInput.value = calc.current.budget != null ? calc.current.budget : '';
+  }
+  const notesInput = document.getElementById('calcNotes');
+  if (document.activeElement !== notesInput){
+    notesInput.value = calc.current.notes || '';
+  }
+  const container = document.getElementById('calcItemsContainer');
+  if (!calc.current.items.length){
+    container.innerHTML = '<div class="empty-note">No items yet — add what\'s in your cart as you shop.</div>';
+  } else {
+    container.innerHTML = calc.current.items.map(it=>{
+      const line = (it.price * it.qty).toFixed(2);
+      const label = it.name ? it.name : 'Item';
+      const sub = itemSubtext({unit: it.unit, notes: it.notes});
+      return `<div class="calc-row">
+        <span class="cname">${label}${sub}</span>
+        <span class="cqty">×${it.qty}</span>
+        <span class="cprice">${line}</span>
+        <button class="cremove" onclick="removeCalcItem(${it.id})">×</button>
+      </div>`;
+    }).join('');
+  }
+  const total = calc.current.items.reduce((s,it)=>s + it.price*it.qty, 0);
+  document.getElementById('calcTotal').textContent = total.toFixed(2);
+  document.getElementById('calcCount').textContent = calc.current.items.length ? `${calc.current.items.length} item${calc.current.items.length===1?'':'s'} in cart` : '';
+
+  const note = document.getElementById('calcBudgetNote');
+  if (calc.current.budget != null && calc.current.budget > 0){
+    const diff = calc.current.budget - total;
+    if (diff < 0){
+      note.textContent = `Over budget by ${Math.abs(diff).toFixed(2)}`;
+      note.className = 'calc-budget-note over';
+    } else {
+      note.textContent = `${diff.toFixed(2)} left of ${calc.current.budget.toFixed(2)} budget`;
+      note.className = 'calc-budget-note under';
+    }
+  } else {
+    note.textContent = '';
+    note.className = 'calc-budget-note';
+  }
+  renderTripHistory();
+}
+document.getElementById('calcBudget').addEventListener('input', (e)=>{
+  const v = parseFloat(e.target.value);
+  calc.current.budget = isNaN(v) ? null : v;
+  saveCalc(); renderCalc();
+});
+document.getElementById('calcNotes').addEventListener('input', (e)=>{
+  calc.current.notes = e.target.value;
+  saveCalc();
+});
+document.getElementById('calcAddBtn').onclick = ()=>{
+  const name = document.getElementById('calcItemName').value.trim();
+  const unit = document.getElementById('calcItemUnit').value.trim();
+  const notes = document.getElementById('calcItemNote').value.trim();
+  const qty = parseFloat(document.getElementById('calcItemQty').value) || 1;
+  const price = parseFloat(document.getElementById('calcItemPrice').value);
+  if (isNaN(price)){ alert('Enter a price to add an item.'); return; }
+  calc.current.items.push({ id: nextCalcId++, name, unit, notes, qty, price });
+  document.getElementById('calcItemName').value = '';
+  document.getElementById('calcItemUnit').value = '';
+  document.getElementById('calcItemNote').value = '';
+  document.getElementById('calcItemQty').value = '1';
+  document.getElementById('calcItemPrice').value = '';
+  document.getElementById('calcItemPrice').focus();
+  saveCalc(); renderCalc();
+};
+document.getElementById('calcItemPrice').addEventListener('keydown', (e)=>{
+  if (e.key === 'Enter') document.getElementById('calcAddBtn').click();
+});
+
+/* ---------- PASTE & ORGANIZE ---------- */
+let pasteDraft = [];
+let nextDraftId = 1;
+function parsePasteLine(line){
+  let s = line.trim();
+  s = s.replace(/^[-*•\u2022]\s*/, '').replace(/^\d+[.)]\s*/, '');
+  // try "name - price", "name, price", "name: price", "name $price"
+  const m = s.match(/^(.*?)[\s,;:-]+\$?\s*(\d+(?:\.\d{1,2})?)\s*$/);
+  if (m && m[1].trim()){
+    return { name: m[1].trim(), price: parseFloat(m[2]) };
+  }
+  return { name: s, price: null };
+}
+document.getElementById('calcParseBtn').onclick = ()=>{
+  const raw = document.getElementById('calcPasteBox').value;
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  if (!lines.length){ alert('Paste some items first, one per line.'); return; }
+  pasteDraft = lines.map(line=>{
+    const parsed = parsePasteLine(line);
+    return { id: nextDraftId++, name: parsed.name, unit: '', notes: '', qty: 1, price: parsed.price };
+  });
+  document.getElementById('calcPasteBox').value = '';
+  renderPasteDraft();
+};
+function renderPasteDraft(){
+  const container = document.getElementById('calcPasteContainer');
+  if (!pasteDraft.length){ container.innerHTML = ''; return; }
+  const rows = pasteDraft.map(d=>`
+    <div class="calc-list-row">
+      <input type="text" class="calc-name-input" style="flex:1;min-width:100px;" value="${(d.name||'').replace(/"/g,'&quot;')}" onchange="updateDraftField(${d.id},'name',this.value)">
+      <input type="text" class="unitmini" placeholder="Unit" value="${(d.unit||'').replace(/"/g,'&quot;')}" onchange="updateDraftField(${d.id},'unit',this.value)">
+      <input type="text" class="notemini" placeholder="Note (brand, etc.)" value="${(d.notes||'').replace(/"/g,'&quot;')}" onchange="updateDraftField(${d.id},'notes',this.value)">
+      <input type="number" class="qtymini" min="1" value="${d.qty}" onchange="updateDraftField(${d.id},'qty',this.value)">
+      <input type="number" step="0.01" placeholder="Price" value="${d.price!=null?d.price:''}" onchange="updateDraftField(${d.id},'price',this.value)">
+      <button onclick="addDraftItem(${d.id})">Add</button>
+      <button class="icon-btn danger" onclick="removeDraftItem(${d.id})" style="padding:6px 9px;">×</button>
+    </div>`).join('');
+  container.innerHTML = `
+    <div class="section-label" style="margin-top:0;border-top:none;padding-top:0;">Review before adding</div>
+    ${rows}
+    <div class="top-row" style="margin-top:10px;">
+      <button class="ghost" id="calcDraftClearBtn">Discard all</button>
+      <button class="primary" id="calcDraftAddAllBtn">Add all to cart</button>
+    </div>`;
+  document.getElementById('calcDraftAddAllBtn').onclick = addAllDraftItems;
+  document.getElementById('calcDraftClearBtn').onclick = ()=>{ pasteDraft = []; renderPasteDraft(); };
+}
+window.updateDraftField = function(id, field, value){
+  const d = pasteDraft.find(x=>x.id===id);
+  if (!d) return;
+  if (field==='qty') d.qty = parseFloat(value) || 1;
+  else if (field==='price') d.price = value==='' ? null : parseFloat(value);
+  else if (field==='unit') d.unit = value;
+  else if (field==='notes') d.notes = value;
+  else d.name = value;
+};
+window.removeDraftItem = function(id){
+  pasteDraft = pasteDraft.filter(x=>x.id!==id);
+  renderPasteDraft();
+};
+window.addDraftItem = function(id){
+  const d = pasteDraft.find(x=>x.id===id);
+  if (!d) return;
+  if (d.price==null || isNaN(d.price)){ alert('Enter a price for '+d.name+' first.'); return; }
+  calc.current.items.push({ id: nextCalcId++, name: d.name, unit: d.unit, notes: d.notes, qty: d.qty, price: d.price });
+  pasteDraft = pasteDraft.filter(x=>x.id!==id);
+  saveCalc(); renderCalc(); renderPasteDraft();
+};
+function addAllDraftItems(){
+  const missing = pasteDraft.filter(d=>d.price==null || isNaN(d.price));
+  if (missing.length){ alert('Fill in a price for: '+missing.map(m=>m.name).join(', ')); return; }
+  pasteDraft.forEach(d=>{
+    calc.current.items.push({ id: nextCalcId++, name: d.name, unit: d.unit, notes: d.notes, qty: d.qty, price: d.price });
+  });
+  pasteDraft = [];
+  saveCalc(); renderCalc(); renderPasteDraft();
+}
+
+window.removeCalcItem = function(id){
+  calc.current.items = calc.current.items.filter(i=>i.id!==id);
+  saveCalc(); renderCalc();
+};
+document.getElementById('calcClearBtn').onclick = ()=>{
+  if (!calc.current.items.length && calc.current.budget==null && !calc.current.notes) return;
+  if (!confirm('Clear this trip\'s items, budget and notes without saving to history?')) return;
+  calc.current = { budget: null, notes: '', items: [] };
+  saveCalc(); renderCalc();
+};
+document.getElementById('calcSaveTripBtn').onclick = ()=>{
+  if (!calc.current.items.length){ alert('Add at least one item before saving this trip.'); return; }
+  const total = calc.current.items.reduce((s,it)=>s + it.price*it.qty, 0);
+  calc.history.unshift({
+    id: nextTripId++,
+    date: new Date().toISOString(),
+    budget: calc.current.budget,
+    notes: calc.current.notes,
+    items: calc.current.items,
+    total
+  });
+  calc.current = { budget: null, notes: '', items: [] };
+  saveCalc(); renderCalc();
+};
+function renderTripHistory(){
+  const wrap = document.getElementById('tripHistoryContainer');
+  if (!calc.history.length){
+    wrap.innerHTML = '<div class="empty-note">No past trips saved yet.</div>';
+    return;
+  }
+  wrap.innerHTML = calc.history.map(trip=>{
+    const d = new Date(trip.date);
+    const dateStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+    const budgetStr = trip.budget != null ? ` · budget ${trip.budget.toFixed(2)}` : '';
+    const notesStr = trip.notes ? `<div class="trip-notes">${trip.notes.replace(/</g,'&lt;')}</div>` : '';
+    const itemsStr = trip.items.map(it=>`${it.name||'Item'} ×${it.qty} — ${(it.price*it.qty).toFixed(2)}`).join('<br>');
+    return `<div class="trip-card">
+      <div class="trip-head">
+        <div>
+          <div class="trip-date">${dateStr}${budgetStr}</div>
+          ${notesStr}
+        </div>
+        <div class="trip-actions">
+          <div class="trip-total">${trip.total.toFixed(2)}</div>
+          <button class="icon-btn danger" onclick="deleteTrip(${trip.id})">Delete</button>
+        </div>
+      </div>
+      <div class="trip-items">${itemsStr}</div>
+    </div>`;
+  }).join('');
+}
+window.deleteTrip = function(id){
+  if (!confirm('Delete this saved trip?')) return;
+  calc.history = calc.history.filter(t=>t.id!==id);
+  saveCalc(); renderCalc();
+};
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  };
+});
+
+loadAll();
+</script>
+</body>
+</html>
