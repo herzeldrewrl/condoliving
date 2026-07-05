@@ -73,6 +73,8 @@
     padding:9px 15px;border-radius:2px;cursor:pointer;font-size:13px;
   }
   button.ghost:hover{background:var(--ink);color:var(--paper);}
+  .hide-done-toggle{font-size:12px;padding:6px 12px;}
+  .hide-done-toggle.active{background:var(--herb);color:var(--white);border-color:var(--herb);}
 
   .suggest-box{background:#EFE6CE;border:1px dashed var(--mustard);padding:14px 16px;border-radius:2px;margin-bottom:20px;}
   .suggest-box .head{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#8A5F14;margin-bottom:8px;}
@@ -86,8 +88,9 @@
   .receipt-head .meta{font-size:11px;color:#8A8168;margin-top:4px;}
   .aisle-block{margin-bottom:16px;}
   .aisle-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mustard);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px;}
-  .grocery-row{display:flex;align-items:center;gap:10px;font-size:14px;padding:3px 0;}
+  .grocery-row{display:flex;align-items:center;gap:10px;font-size:14px;padding:5px 8px;border-left:3px solid transparent;margin-left:-11px;border-radius:2px;}
   .grocery-row input{width:15px;height:15px;accent-color:var(--herb);}
+  .grocery-row.checked{background:#EEF2E8;border-left-color:var(--herb);}
   .grocery-row.checked label{text-decoration:line-through;color:#A79E85;}
   .grocery-row label{flex:1;cursor:pointer;}
   .item-sub{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A8168;font-weight:400;text-decoration:none !important;margin-top:1px;}
@@ -134,11 +137,15 @@
   .calc-row .cprice{font-family:'IBM Plex Mono',monospace;width:80px;text-align:right;}
   .calc-row .cremove{background:none;border:none;color:var(--tomato);cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;}
   .calc-total-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;border-top:2px solid var(--ink);margin-top:10px;padding-top:10px;}
-  .calc-budget-note{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:8px;text-align:right;}
-  .calc-budget-note.over{color:var(--tomato);font-weight:600;}
-  .calc-budget-note.under{color:var(--herb);}
+  .calc-budget-note{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;margin-top:10px;text-align:center;padding:12px 14px;border-radius:4px;}
+  .calc-budget-note.over{background:#F5E2DC;color:var(--tomato);border:1px solid var(--tomato);}
+  .calc-budget-note.under{background:#E4EEDD;color:var(--herb);border:1px solid var(--herb);}
   .calc-list-row{display:flex;align-items:center;gap:8px;font-size:14px;padding:6px 0;flex-wrap:wrap;}
+  .calc-list-row{border-left:3px solid transparent;padding-left:8px;margin-left:-11px;}
+  .calc-list-row.added{background:#EEF2E8;border-left-color:var(--herb);}
   .calc-list-row.added label{text-decoration:line-through;color:#A79E85;}
+  .row-check{display:inline-block;width:16px;color:var(--herb);font-weight:700;}
+  .row-check.pending{width:16px;}
   .calc-list-row label{flex:1;cursor:pointer;}
   .calc-list-row input[type=number]{width:78px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--paper);}
   .qtymini{width:44px;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--paper);}
@@ -151,12 +158,38 @@
   .calc-list-row button:hover{background:var(--ink);}
   .calc-list-row button:disabled{background:var(--line);cursor:default;}
   .trip-card{background:var(--white);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin-bottom:10px;}
-  .trip-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .trip-date{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--herb);text-transform:uppercase;letter-spacing:.05em;}
+  .trip-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer;list-style:none;position:relative;padding-right:20px;}
+  .trip-head::-webkit-details-marker{display:none;}
+  .trip-head::before{content:"▾";position:absolute;right:0;top:2px;font-size:13px;color:#8A8168;transition:transform .15s;}
+  .trip-card[open] .trip-head::before{transform:rotate(180deg);}
+  .trip-items{display:none;}
+  .trip-card[open] .trip-items{display:block;}
+  .trip-date{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:.01em;}
+  .trip-date .wk{color:var(--mustard);text-transform:uppercase;font-size:11px;font-weight:600;letter-spacing:.08em;margin-right:8px;}
   .trip-notes{font-size:13px;color:#6B6248;margin-top:4px;font-style:italic;}
   .trip-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
   .trip-total{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
   .trip-items{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#6B6248;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;line-height:1.7;}
+  .trips-dropdown{margin-top:26px;}
+  .trips-dropdown summary{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--herb);
+    cursor:pointer;list-style:none;padding:10px 0;border-top:1px dashed var(--line);border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .trips-dropdown summary::-webkit-details-marker{display:none;}
+  .trips-dropdown summary::after{content:"▾";font-size:13px;color:var(--ink);transition:transform .15s;}
+  .trips-dropdown[open] summary::after{transform:rotate(180deg);}
+  .trips-dropdown #tripHistoryContainer{margin-top:14px;}
+  .receipt-preview{margin-top:8px;}
+  .receipt-preview img{max-width:160px;max-height:160px;border:1px solid var(--line);border-radius:2px;display:block;cursor:pointer;}
+  .receipt-preview .remove-photo{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;background:none;border:1px solid var(--tomato);color:var(--tomato);padding:3px 8px;border-radius:2px;cursor:pointer;}
+  .trip-receipt-thumb{max-width:90px;max-height:90px;border:1px solid var(--line);border-radius:2px;cursor:pointer;float:right;margin-left:10px;}
+  .match-tag{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:2px 7px;border-radius:2px;display:inline-block;margin-top:6px;}
+  .match-tag.match{background:#E4EEDD;color:var(--herb);}
+  .match-tag.mismatch{background:#F5E2DC;color:var(--tomato);}
+  .lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:80;padding:20px;cursor:zoom-out;}
+  .lightbox-overlay.open{display:flex;}
+  .lightbox-overlay img{max-width:100%;max-height:100%;border-radius:2px;}
 </style>
 </head>
 <body>
@@ -197,7 +230,7 @@
     <div class="receipt">
       <div class="receipt-head">
         <h2>Master Grocery List</h2>
-        <div class="meta" id="groceryMeta"></div>
+        <div class="meta" id="groceryMeta" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;text-align:left;"></div>
       </div>
       <div id="groceryContainer"></div>
     </div>
@@ -208,6 +241,7 @@
     <div class="section-label">Pick what you're cooking this week</div>
     <div class="card" id="weeklyMealPicker"></div>
     <div class="section-label">This week's shopping list (perishables for selected meals)</div>
+    <div class="hint" id="weeklyProgress" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"></div>
     <div class="receipt">
       <div id="weeklyContainer"></div>
     </div>
@@ -217,7 +251,7 @@
   <div class="panel" id="panel-pantry">
     <div class="hint" style="margin-bottom:14px;">Shelf-stable items across your whole database. Check off what needs restocking on your next monthly run.</div>
     <div class="receipt">
-      <div class="receipt-head"><h2>Monthly Pantry Restock</h2></div>
+      <div class="receipt-head"><h2>Monthly Pantry Restock</h2><div class="meta" id="pantryProgress" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;text-align:left;"></div></div>
       <div id="pantryContainer"></div>
     </div>
   </div>
@@ -237,6 +271,7 @@
       <div class="field" style="margin-bottom:12px;">
         <label>Budget for this trip (optional)</label>
         <input type="number" id="calcBudget" inputmode="decimal" step="0.01" placeholder="e.g. 50.00">
+        <div id="calcBudgetNoteTop" class="calc-budget-note" style="margin-top:10px;display:none;"></div>
       </div>
       <div class="field" style="margin-bottom:0;">
         <label>Notes (optional)</label>
@@ -245,6 +280,7 @@
     </div>
 
     <div class="section-label">Your list — tap a price, hit Add</div>
+    <div class="hint" id="calcListProgress" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"></div>
     <div class="receipt">
       <div id="calcListContainer"></div>
     </div>
@@ -280,13 +316,28 @@
       </div>
       <div id="calcBudgetNote" class="calc-budget-note"></div>
     </div>
+    <div class="section-label">Countercheck with receipt (optional)</div>
+    <div class="card">
+      <div class="field" style="margin-bottom:12px;">
+        <label>Receipt total</label>
+        <input type="number" id="receiptTotalInput" inputmode="decimal" step="0.01" placeholder="Type what the receipt says">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Receipt photo</label>
+        <input type="file" id="receiptPhotoInput" accept="image/*" capture="environment">
+        <div id="receiptPreview" class="receipt-preview"></div>
+      </div>
+    </div>
+
     <div class="top-row" style="margin-top:14px;">
       <button class="ghost" id="calcClearBtn">Clear trip</button>
       <button class="primary" id="calcSaveTripBtn">Save Trip to History</button>
     </div>
 
-    <div class="section-label">Past trips</div>
-    <div id="tripHistoryContainer"></div>
+    <details id="pastTripsDetails" class="trips-dropdown">
+      <summary id="pastTripsSummary">Past trips</summary>
+      <div id="tripHistoryContainer"></div>
+    </details>
   </div>
 </div>
 
@@ -312,6 +363,10 @@
       <button class="primary" id="saveMealBtn">Save Meal</button>
     </div>
   </div>
+</div>
+
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="this.classList.remove('open')">
+  <img id="lightboxImg" src="">
 </div>
 
 <script>
@@ -381,6 +436,7 @@ const DEFAULT_MEALS = [
 let db = { meals: [], ingredients: {} };
 let planning = { weeklySelection: [], pantryRestock: {}, groceryChecked: {} };
 let calc = { current: { budget: null, notes: '', items: [] }, history: [] };
+let hideDone = { calc: false, grocery: false, weekly: false, pantry: false };
 let editingMealId = null;
 let nextId = 1;
 let nextCalcId = 1;
@@ -529,6 +585,22 @@ function renderAll(){
   renderIngredients();
   renderCalc();
 }
+function withScrollPreserved(fn){
+  const y = window.scrollY;
+  fn();
+  window.scrollTo(0, y);
+}
+window.toggleHideDone = function(which){
+  hideDone[which] = !hideDone[which];
+  if (which==='calc') renderCalcList();
+  else if (which==='grocery') renderGrocery();
+  else if (which==='weekly') renderWeekly();
+  else if (which==='pantry') renderPantry();
+};
+function hideDoneToggleHtml(which, label){
+  const active = hideDone[which];
+  return `<button class="ghost hide-done-toggle ${active?'active':''}" onclick="toggleHideDone('${which}')">${active ? '☑' : '☐'} ${label}</button>`;
+}
 
 /* ---------- MEALS TAB ---------- */
 function renderMeals(){
@@ -654,17 +726,21 @@ function itemSubtext(item){
   if (item.notes) parts.push(item.notes);
   return parts.length ? `<span class="item-sub">${parts.join(' · ')}</span>` : '';
 }
-function renderGroceryGroups(container, groups, checkPrefix){
+function renderGroceryGroups(container, groups, checkPrefix, hideChecked){
   container.innerHTML = '';
   const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
   if (!aisleOrder.length){
     container.innerHTML = '<div class="empty-note">Nothing here yet.</div>';
     return;
   }
+  let anyVisible = false;
   aisleOrder.forEach(aisle=>{
+    const visibleItems = hideChecked ? groups[aisle].filter(item=>!planning.groceryChecked[checkPrefix+item.key]) : groups[aisle];
+    if (!visibleItems.length) return;
+    anyVisible = true;
     const block = document.createElement('div');
     block.className = 'aisle-block';
-    const rows = groups[aisle].map(item=>{
+    const rows = visibleItems.map(item=>{
       const ckKey = checkPrefix + item.key;
       const checked = !!planning.groceryChecked[ckKey];
       return `<div class="grocery-row ${checked?'checked':''}">
@@ -675,6 +751,9 @@ function renderGroceryGroups(container, groups, checkPrefix){
     block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
     container.appendChild(block);
   });
+  if (!anyVisible){
+    container.innerHTML = '<div class="empty-note">Everything\'s checked off 🎉</div>';
+  }
 }
 window.toggleCheck = function(key){
   planning.groceryChecked[key] = !planning.groceryChecked[key];
@@ -685,8 +764,10 @@ window.toggleCheckFromLabel = function(key){ toggleCheck(key); }
 function renderGrocery(){
   const keys = aggregateIngredients(null);
   const groups = groupByAisle(keys, null);
-  renderGroceryGroups(document.getElementById('groceryContainer'), groups, 'g:');
-  document.getElementById('groceryMeta').textContent = `${keys.length} unique ingredients across ${db.meals.length} meals`;
+  renderGroceryGroups(document.getElementById('groceryContainer'), groups, 'g:', hideDone.grocery);
+  const checkedCount = keys.filter(k=>planning.groceryChecked['g:'+k]).length;
+  document.getElementById('groceryMeta').innerHTML =
+    `<span>${keys.length} unique ingredients · ${checkedCount} checked off, ${keys.length-checkedCount} still needed</span> ${hideDoneToggleHtml('grocery','Only show what\'s left')}`;
 }
 document.getElementById('clearCheckedBtn').onclick = ()=>{
   Object.keys(planning.groceryChecked).forEach(k=>{ if(k.startsWith('g:')) delete planning.groceryChecked[k]; });
@@ -710,9 +791,13 @@ function renderWeekly(){
   const wrap = document.getElementById('weeklyContainer');
   if (!planning.weeklySelection.length){
     wrap.innerHTML = '<div class="empty-note">Select meals above to build this week&#39;s shopping list.</div>';
+    document.getElementById('weeklyProgress').textContent = '';
     return;
   }
-  renderGroceryGroups(wrap, groups, 'w:');
+  const checkedCount = keys.filter(k=>planning.groceryChecked['w:'+k]).length;
+  document.getElementById('weeklyProgress').innerHTML =
+    `<span>${checkedCount} of ${keys.length} checked off</span> ${hideDoneToggleHtml('weekly','Only show what\'s left')}`;
+  renderGroceryGroups(wrap, groups, 'w:', hideDone.weekly);
 }
 window.toggleWeekly = function(id){
   const i = planning.weeklySelection.indexOf(id);
@@ -727,11 +812,20 @@ function renderPantry(){
   const container = document.getElementById('pantryContainer');
   container.innerHTML = '';
   const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
+  const pantryKeys = aisleOrder.flatMap(a=>groups[a].map(i=>i.key));
+  const checkedCount = pantryKeys.filter(k=>planning.pantryRestock[k]).length;
+  document.getElementById('pantryProgress').innerHTML = pantryKeys.length
+    ? `<span>${checkedCount} of ${pantryKeys.length} flagged for restock</span> ${hideDoneToggleHtml('pantry','Only show what needs restocking')}`
+    : '';
   if (!aisleOrder.length){ container.innerHTML = '<div class="empty-note">No pantry-type ingredients yet.</div>'; return; }
+  let anyVisible = false;
   aisleOrder.forEach(aisle=>{
+    const visibleItems = hideDone.pantry ? groups[aisle].filter(item=>!!planning.pantryRestock[item.key]) : groups[aisle];
+    if (!visibleItems.length) return;
+    anyVisible = true;
     const block = document.createElement('div');
     block.className = 'aisle-block';
-    const rows = groups[aisle].map(item=>{
+    const rows = visibleItems.map(item=>{
       const checked = !!planning.pantryRestock[item.key];
       return `<div class="grocery-row ${checked?'checked':''}">
         <input type="checkbox" ${checked?'checked':''} onchange="togglePantry('${item.key}')">
@@ -741,6 +835,9 @@ function renderPantry(){
     block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
     container.appendChild(block);
   });
+  if (!anyVisible){
+    container.innerHTML = '<div class="empty-note">Nothing needs restocking right now 🎉</div>';
+  }
 }
 window.togglePantry = function(key){
   planning.pantryRestock[key] = !planning.pantryRestock[key];
@@ -792,28 +889,41 @@ function renderCalcList(){
   const aisleOrder = AISLES.filter(a=>groups[a] && groups[a].length);
   if (!aisleOrder.length){
     container.innerHTML = '<div class="empty-note">Your grocery list is empty — add some meals first.</div>';
+    document.getElementById('calcListProgress').innerHTML = '';
     return;
   }
   const addedKeys = new Set(calc.current.items.filter(i=>i.key).map(i=>i.key));
+  const totalCount = keys.length;
+  const addedCount = keys.filter(k=>addedKeys.has(k)).length;
+  document.getElementById('calcListProgress').innerHTML =
+    `<span>${addedCount} of ${totalCount} picked up · ${totalCount - addedCount} still to go</span> ${hideDoneToggleHtml('calc','Only show what\'s left')}`;
+  let anyVisible = false;
   aisleOrder.forEach(aisle=>{
+    const visibleItems = hideDone.calc ? groups[aisle].filter(item=>!addedKeys.has(item.key)) : groups[aisle];
+    if (!visibleItems.length) return;
+    anyVisible = true;
     const block = document.createElement('div');
     block.className = 'aisle-block';
-    const rows = groups[aisle].map(item=>{
+    const rows = visibleItems.map(item=>{
       const added = addedKeys.has(item.key);
       const unitVal = (item.unit||'').replace(/"/g,'&quot;');
       const notesVal = (item.notes||'').replace(/"/g,'&quot;');
+      const check = added ? '<span class="row-check">✓</span>' : '<span class="row-check pending"></span>';
       return `<div class="calc-list-row ${added?'added':''}">
-        <label>${item.display}</label>
+        <label>${check}${item.display}</label>
         <input type="text" class="unitmini" placeholder="Unit" value="${unitVal}" onchange="updateIngredientUnit('${item.key}', this.value)" ${added?'disabled':''}>
         <input type="text" class="notemini" placeholder="Note (brand, etc.)" value="${notesVal}" onchange="updateIngredientNotes('${item.key}', this.value)" ${added?'disabled':''}>
         <input type="number" class="qtymini" min="1" value="1" id="qty-${item.key}" ${added?'disabled':''}>
         <input type="number" step="0.01" placeholder="Price" id="price-${item.key}" ${added?'disabled':''}>
-        <button onclick="quickAddCalc('${item.key}','${item.display.replace(/'/g,"\\'")}')" ${added?'disabled':''}>${added?'Added':'Add'}</button>
+        <button onclick="quickAddCalc('${item.key}','${item.display.replace(/'/g,"\\'")}')" ${added?'disabled':''}>${added?'Got it':'Add'}</button>
       </div>`;
     }).join('');
     block.innerHTML = `<div class="aisle-title">${aisle}</div>${rows}`;
     container.appendChild(block);
   });
+  if (!anyVisible){
+    container.innerHTML = '<div class="empty-note">Everything\'s picked up 🎉</div>';
+  }
 }
 window.updateIngredientUnit = function(key, value){
   if (!db.ingredients[key]) return;
@@ -837,7 +947,7 @@ window.quickAddCalc = function(key, display){
   if (isNaN(price)){ alert('Enter a price for '+display+' first.'); return; }
   const info = db.ingredients[key] || {};
   calc.current.items.push({ id: nextCalcId++, key, name: display, unit: info.unit||'', notes: info.notes||'', qty, price });
-  saveCalc(); renderCalc();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
 function renderCalc(){
   renderCalcList();
@@ -869,27 +979,38 @@ function renderCalc(){
   const total = calc.current.items.reduce((s,it)=>s + it.price*it.qty, 0);
   document.getElementById('calcTotal').textContent = total.toFixed(2);
   document.getElementById('calcCount').textContent = calc.current.items.length ? `${calc.current.items.length} item${calc.current.items.length===1?'':'s'} in cart` : '';
-
-  const note = document.getElementById('calcBudgetNote');
-  if (calc.current.budget != null && calc.current.budget > 0){
-    const diff = calc.current.budget - total;
-    if (diff < 0){
-      note.textContent = `Over budget by ${Math.abs(diff).toFixed(2)}`;
-      note.className = 'calc-budget-note over';
-    } else {
-      note.textContent = `${diff.toFixed(2)} left of ${calc.current.budget.toFixed(2)} budget`;
-      note.className = 'calc-budget-note under';
-    }
-  } else {
-    note.textContent = '';
-    note.className = 'calc-budget-note';
-  }
+  updateCalcTotals();
   renderTripHistory();
 }
+function updateCalcTotals(){
+  const total = calc.current.items.reduce((s,it)=>s + it.price*it.qty, 0);
+  document.getElementById('calcTotal').textContent = total.toFixed(2);
+  const note = document.getElementById('calcBudgetNote');
+  const noteTop = document.getElementById('calcBudgetNoteTop');
+  if (calc.current.budget != null && calc.current.budget > 0){
+    const diff = calc.current.budget - total;
+    let text, cls;
+    if (diff < 0){
+      text = `Over budget by ${Math.abs(diff).toFixed(2)}`;
+      cls = 'calc-budget-note over';
+    } else {
+      text = `${diff.toFixed(2)} left of ${calc.current.budget.toFixed(2)} budget`;
+      cls = 'calc-budget-note under';
+    }
+    note.textContent = text; note.className = cls;
+    noteTop.textContent = text; noteTop.className = cls; noteTop.style.display = 'block';
+  } else {
+    note.textContent = ''; note.className = 'calc-budget-note';
+    noteTop.textContent = ''; noteTop.className = 'calc-budget-note'; noteTop.style.display = 'none';
+  }
+}
+let budgetSaveTimer = null;
 document.getElementById('calcBudget').addEventListener('input', (e)=>{
   const v = parseFloat(e.target.value);
   calc.current.budget = isNaN(v) ? null : v;
-  saveCalc(); renderCalc();
+  updateCalcTotals(); // lightweight — doesn't touch the list, so nothing shifts while typing
+  clearTimeout(budgetSaveTimer);
+  budgetSaveTimer = setTimeout(saveCalc, 400);
 });
 document.getElementById('calcNotes').addEventListener('input', (e)=>{
   calc.current.notes = e.target.value;
@@ -909,7 +1030,7 @@ document.getElementById('calcAddBtn').onclick = ()=>{
   document.getElementById('calcItemQty').value = '1';
   document.getElementById('calcItemPrice').value = '';
   document.getElementById('calcItemPrice').focus();
-  saveCalc(); renderCalc();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
 document.getElementById('calcItemPrice').addEventListener('keydown', (e)=>{
   if (e.key === 'Enter') document.getElementById('calcAddBtn').click();
@@ -981,7 +1102,7 @@ window.addDraftItem = function(id){
   if (d.price==null || isNaN(d.price)){ alert('Enter a price for '+d.name+' first.'); return; }
   calc.current.items.push({ id: nextCalcId++, name: d.name, unit: d.unit, notes: d.notes, qty: d.qty, price: d.price });
   pasteDraft = pasteDraft.filter(x=>x.id!==id);
-  saveCalc(); renderCalc(); renderPasteDraft();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); renderPasteDraft(); });
 };
 function addAllDraftItems(){
   const missing = pasteDraft.filter(d=>d.price==null || isNaN(d.price));
@@ -990,35 +1111,98 @@ function addAllDraftItems(){
     calc.current.items.push({ id: nextCalcId++, name: d.name, unit: d.unit, notes: d.notes, qty: d.qty, price: d.price });
   });
   pasteDraft = [];
-  saveCalc(); renderCalc(); renderPasteDraft();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); renderPasteDraft(); });
 }
 
 window.removeCalcItem = function(id){
   calc.current.items = calc.current.items.filter(i=>i.id!==id);
-  saveCalc(); renderCalc();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
 document.getElementById('calcClearBtn').onclick = ()=>{
   if (!calc.current.items.length && calc.current.budget==null && !calc.current.notes) return;
   if (!confirm('Clear this trip\'s items, budget and notes without saving to history?')) return;
   calc.current = { budget: null, notes: '', items: [] };
-  saveCalc(); renderCalc();
+  pendingReceiptImage = null;
+  document.getElementById('receiptTotalInput').value = '';
+  document.getElementById('receiptPhotoInput').value = '';
+  renderReceiptPreview();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
+/* ---------- RECEIPT COUNTERCHECK ---------- */
+let pendingReceiptImage = null;
+function compressImage(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('receiptPhotoInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  try{
+    pendingReceiptImage = await compressImage(file);
+    renderReceiptPreview();
+  } catch(err){
+    alert('Could not read that photo — try another.');
+  }
+});
+function renderReceiptPreview(){
+  const box = document.getElementById('receiptPreview');
+  if (!pendingReceiptImage){ box.innerHTML = ''; return; }
+  box.innerHTML = `<img src="${pendingReceiptImage}" onclick="openLightbox('${pendingReceiptImage}')">
+    <button class="remove-photo" id="removeReceiptBtn">Remove photo</button>`;
+  document.getElementById('removeReceiptBtn').onclick = ()=>{
+    pendingReceiptImage = null;
+    document.getElementById('receiptPhotoInput').value = '';
+    renderReceiptPreview();
+  };
+}
+window.openLightbox = function(src){
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightboxOverlay').classList.add('open');
+};
+
 document.getElementById('calcSaveTripBtn').onclick = ()=>{
   if (!calc.current.items.length){ alert('Add at least one item before saving this trip.'); return; }
   const total = calc.current.items.reduce((s,it)=>s + it.price*it.qty, 0);
+  const receiptTotalRaw = document.getElementById('receiptTotalInput').value;
+  const receiptTotal = receiptTotalRaw === '' ? null : parseFloat(receiptTotalRaw);
   calc.history.unshift({
     id: nextTripId++,
     date: new Date().toISOString(),
     budget: calc.current.budget,
     notes: calc.current.notes,
     items: calc.current.items,
-    total
+    total,
+    receiptTotal: (receiptTotal!=null && !isNaN(receiptTotal)) ? receiptTotal : null,
+    receiptImage: pendingReceiptImage
   });
   calc.current = { budget: null, notes: '', items: [] };
-  saveCalc(); renderCalc();
+  pendingReceiptImage = null;
+  document.getElementById('receiptTotalInput').value = '';
+  document.getElementById('receiptPhotoInput').value = '';
+  renderReceiptPreview();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
 function renderTripHistory(){
   const wrap = document.getElementById('tripHistoryContainer');
+  document.getElementById('pastTripsSummary').textContent = `Past trips (${calc.history.length})`;
   if (!calc.history.length){
     wrap.innerHTML = '<div class="empty-note">No past trips saved yet.</div>';
     return;
@@ -1026,28 +1210,42 @@ function renderTripHistory(){
   wrap.innerHTML = calc.history.map(trip=>{
     const d = new Date(trip.date);
     const dateStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+    const weekdayStr = d.toLocaleDateString(undefined, {weekday:'short'});
     const budgetStr = trip.budget != null ? ` · budget ${trip.budget.toFixed(2)}` : '';
     const notesStr = trip.notes ? `<div class="trip-notes">${trip.notes.replace(/</g,'&lt;')}</div>` : '';
     const itemsStr = trip.items.map(it=>`${it.name||'Item'} ×${it.qty} — ${(it.price*it.qty).toFixed(2)}`).join('<br>');
-    return `<div class="trip-card">
-      <div class="trip-head">
+    const thumbStr = trip.receiptImage ? `<img class="trip-receipt-thumb" src="${trip.receiptImage}" onclick="event.preventDefault(); event.stopPropagation(); openLightbox('${trip.receiptImage}')">` : '';
+    let matchStr = '';
+    if (trip.receiptTotal != null){
+      const diff = Math.abs(trip.receiptTotal - trip.total);
+      if (diff < 0.01){
+        matchStr = `<div class="match-tag match">✓ Matches receipt (${trip.receiptTotal.toFixed(2)})</div>`;
+      } else {
+        const dir = trip.receiptTotal > trip.total ? 'higher' : 'lower';
+        matchStr = `<div class="match-tag mismatch">⚠ Receipt says ${trip.receiptTotal.toFixed(2)} — ${diff.toFixed(2)} ${dir} than tracked</div>`;
+      }
+    }
+    return `<details class="trip-card">
+      <summary class="trip-head">
+        ${thumbStr}
         <div>
-          <div class="trip-date">${dateStr}${budgetStr}</div>
+          <div class="trip-date"><span class="wk">${weekdayStr}</span>${dateStr}${budgetStr}</div>
           ${notesStr}
+          ${matchStr}
         </div>
         <div class="trip-actions">
           <div class="trip-total">${trip.total.toFixed(2)}</div>
-          <button class="icon-btn danger" onclick="deleteTrip(${trip.id})">Delete</button>
+          <button class="icon-btn danger" onclick="event.preventDefault(); event.stopPropagation(); deleteTrip(${trip.id})">Delete</button>
         </div>
-      </div>
+      </summary>
       <div class="trip-items">${itemsStr}</div>
-    </div>`;
+    </details>`;
   }).join('');
 }
 window.deleteTrip = function(id){
   if (!confirm('Delete this saved trip?')) return;
   calc.history = calc.history.filter(t=>t.id!==id);
-  saveCalc(); renderCalc();
+  withScrollPreserved(()=>{ saveCalc(); renderCalc(); });
 };
 
 /* ---------- TABS ---------- */
